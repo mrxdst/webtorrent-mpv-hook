@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "outDir": "./build/",
+    "strict": true,
+    "allowJs": true,
+    "downlevelIteration": true
+  },
+  "include": [
+    "src"
+  ]
+}
