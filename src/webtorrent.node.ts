@@ -1,6 +1,7 @@
 import WebTorrent from 'webtorrent';
 import net from 'net';
 import convert from 'convert-units';
+import { MpvJsonIpc } from 'mpv-json-ipc';
 
 declare module 'webtorrent' {
   interface TorrentFile {
@@ -62,8 +63,7 @@ let client: WebTorrent.Instance | undefined;
 let server: net.Server | undefined;
 
 let socket: net.Socket | undefined;
-const commandCallbacks = new Map<number, (data: Record<string, unknown>) => void>();
-let requestId = 0;
+let jsonIpc: MpvJsonIpc | undefined;
 let currentFile: string | undefined;
 
 main();
@@ -104,6 +104,8 @@ function main (): void {
     function connect(): void {
       socket = net.createConnection(options.socketName);
       socket.unref();
+
+      jsonIpc = new MpvJsonIpc(socket);
   
       socket.on('connect', () => {
         sendOverlay();
@@ -114,8 +116,21 @@ function main (): void {
           torrent.once('ready', startPlayback);
         }
       });
-  
-      socket.on('data', onData);
+
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      jsonIpc.on('file-loaded', async () => {
+        const res = await jsonIpc?.command('get_property', 'path');
+
+        if (res && typeof res.data === 'string') {
+          currentFile = res.data;
+          sendOverlay();
+        }
+      });
+
+      jsonIpc.on('end-file', () => {
+        currentFile = undefined;
+        sendOverlay();
+      });  
   
       socket.on('error', e => {
         if (e.message.includes('connect ENOENT')) {
@@ -138,15 +153,15 @@ function main (): void {
       const item = `http://localhost:${port}/${index}/${encodeURIComponent(file.name)}`;
 
       if (i === 0) {
-        sendCommand(['loadfile', item]);
+        void(jsonIpc?.command('loadfile', item));
       } else {
-        sendCommand(['loadfile', item, 'append']);
+        void(jsonIpc?.command('loadfile', item, 'append'));
       }
     }
   }
 
   function sendOverlay(): void {
-    const B = (text: string): string => '{\\\\b1}' + text + '{\\\\b0}';
+    const B = (text: string): string => '{\\b1}' + text + '{\\b0}';
 
     const bar = buildBar(torrent.pieces);
     const progress = Math.floor(torrent.progress * 1000) / 10;
@@ -196,7 +211,7 @@ function main (): void {
       }
     }
 
-    sendCommand(['script-message-to', 'webtorrent', 'osd-data', textStyle + lines.join('\n')]);
+    void(jsonIpc?.command('script-message-to', 'webtorrent', 'osd-data', textStyle + lines.join('\n')));
 
     type Unit = Parameters<ReturnType<typeof convert>['from']>[0];
     function formatNumber(value: number, unit: Unit, fractionDigits = 0): string {
@@ -246,70 +261,8 @@ function main (): void {
     return `{\\fn${options.font_mono}}{\\fscy80}{\\fscx80}${barText}{\\fscy}{\\fscx}{\\fn${options.font}}`;
   }
 
-  function onData(data: Buffer): void {
-    const lines = data.toString().split('\n');
-
-    type Response = {
-      event?: string;
-      name?: string;
-      data?: number;
-      request_id: number;
-    };
-
-    for (const line of lines) {
-      let response;
-      try {
-        response = JSON.parse(line) as Response;
-      } catch (e) {
-        return;
-      }
-
-      if (response.event === 'file-loaded') {
-        sendCommand(['get_property', 'path'], res => {currentFile = res.data as string;});
-        sendOverlay();
-      }
-
-      else if (response.event === 'end-file') {
-        currentFile = undefined;
-        sendOverlay();
-      }
-
-      const cb = commandCallbacks.get(response.request_id);
-      if (cb) {
-        try {
-          cb(response);
-        } finally {
-          commandCallbacks.delete(response.request_id);
-        }
-      }
-    }
-  }
-
-  function sendCommand(args: unknown[], cb?: (data: Record<string, unknown>) => void): void {
-    if (!socket) {
-      return;
-    }
-
-    requestId = (requestId + 1) % (2**32 - 1);
-
-    const cmd = {
-      command: args,
-      'request_id': requestId
-    };
-
-    if (cb) {
-      commandCallbacks.set(requestId, cb);
-    }
-
-    try {
-      socket.write(JSON.stringify(cmd) + '\n');
-    } catch (e) {
-      // nothing
-    }
-  }
-
   function log(...args: Parameters<typeof console.log>): void {
-    sendCommand(['script-message-to', 'webtorrent', 'info', ...args]);
+    void(jsonIpc?.command('script-message-to', 'webtorrent', 'info', ...args));
   }
 }
 

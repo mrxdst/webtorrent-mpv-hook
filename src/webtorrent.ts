@@ -10,11 +10,10 @@ const assStop = mp.get_property_osd('osd-ass-cc/1');
 let orgIdle: string | undefined;
 let orgForceWindow: string | undefined;
 
+let webTorrentRunning = false;
 let active = false;
-let waiting = false;
-const osdIntervalMs = 100;
-let overlayTimer: number | undefined;
-let data = '';
+let initialyActive = false;
+let overlayText = '';
 
 // Sync with options in webtorrent.node.ts
 const options = {
@@ -40,44 +39,37 @@ mp.options.read_options(options, 'stats');
 mp.options.read_options(options);
 
 function keyPressHandler() {
-  if (waiting) {
-    active = true;
-    waiting = false;
-  }
-  active = !active;
-  if (active) {
-    showOverlay();
-  } else {
+  if (active || initialyActive) {
     clearOverlay();
+  } else {
+    showOverlay();
   }
 }
 
 function showOverlay() {
-  if (!waiting && !data) {
-    return;
-  }
-  if (overlayTimer) {
-    return;
-  }
+  initialyActive = false;
+  active = true;
   printOverlay();
-  overlayTimer = setInterval(printOverlay, osdIntervalMs) as unknown as number;
 }
 
 function printOverlay() {
-  if (!data) {
+  if (!overlayText) {
     return;
   }
-  mp.osd_message(assStart + data + assStop, osdIntervalMs * 2 / 1000);
+  if (active || initialyActive) {
+    mp.osd_message(assStart + overlayText + assStop, 2);
+  }
 }
 
 function clearOverlay() {
-  clearInterval(overlayTimer);
-  overlayTimer = undefined;
+  active = false;
+  initialyActive = false;
   mp.osd_message('', 0);
 }
 
 function onData(_data: unknown) {
-  data = _data as string;
+  overlayText = _data as string;
+  printOverlay();
 }
 
 function onInfo(..._info: unknown[]) {
@@ -85,65 +77,48 @@ function onInfo(..._info: unknown[]) {
 }
 
 function onFileLoaded() {
-  waiting = false;
+  initialyActive = false;
   if (!active) {
     clearOverlay();
   }
 
-  orgIdle && mp.set_property('idle', orgIdle);
-  orgForceWindow && mp.set_property('force-window', orgForceWindow);
+  restoreIdle();
 }
 
 function onLoadHook() {
   const url = mp.get_property('stream-open-filename', '');
 
-  if (/^magnet:/i.test(url)) {
-    runHook(url);
-  } else if (/\.torrent$/i.test(url)) {
-    runHook(url);
-  } else if (/^[0-9A-F]{40}$/i.test(url)) {
-    runHook(url);
-  } else if (/^[0-9A-Z]{32}$/i.test(url)) {
-    runHook(url);
+  try {
+    if (/^magnet:/i.test(url)) {
+      runHook(url);
+    } else if (/\.torrent$/i.test(url)) {
+      runHook(url);
+    } else if (/^[0-9A-F]{40}$/i.test(url)) {
+      runHook(url);
+    } else if (/^[0-9A-Z]{32}$/i.test(url)) {
+      runHook(url);
+    }
+  } catch (_e) {
+    const e = _e as Error;
+    mp.msg.error(e.message)
   }
 }
 
 function runHook(url: string) {
-  mp.msg.info('Running webtorrent hook');
-
-  let socketName = mp.get_property('input-ipc-server');
-  if (!socketName) {
-    mp.set_property('input-ipc-server', `/tmp/webtorrent-mpv-hook-socket-${Date.now()}`);
-    socketName = mp.get_property('input-ipc-server');
+  mp.msg.info('Running WebTorrent hook');
+  if (webTorrentRunning) {
+    throw new Error('WebTorrent already running. Only one instance is allowed.');
   }
+
+  const socketName = getSocketName();
    
-  const realPath = mp.command_native({
-    name: 'subprocess',
-    args: ['node', '-p', `require('fs').realpathSync('${mp.get_script_file()}')`],
-    playback_only: false,
-    capture_stderr: true,
-    capture_stdout: true
-  }) as SubprocessResult | undefined;
+  const scriptPath = getNodeScriptPath();
+  
+  webTorrentRunning = true;
+  initialyActive = true;
 
-  if (!realPath) {
-    mp.msg.error(mp.last_error());
-    return;
-  } else if (realPath.stderr) {
-    mp.msg.error(realPath.stderr);
-    return;
-  } else if (realPath.status) {
-    mp.msg.error('node script failed');
-    return;
-  }
+  setIdle();
 
-  const scriptName = realPath.stdout.split(/\r\n|\r|\n/)[0].replace(/webtorrent\.js$/, 'webtorrent.node.js');
-
-  orgIdle = mp.get_property('idle');
-  orgForceWindow = mp.get_property('force-window');
-  mp.set_property('idle', 'yes');
-  mp.set_property('force-window', 'yes');
-
-  waiting = true;
   mp.register_script_message('osd-data', onData);
   mp.register_script_message('info', onInfo);
   mp.register_event('file-loaded', onFileLoaded);
@@ -156,26 +131,81 @@ function runHook(url: string) {
 
   mp.command_native_async({
     name: 'subprocess',
-    args: ['node', scriptName, JSON.stringify(args)],
+    args: ['node', scriptPath, JSON.stringify(args)],
     playback_only: false,
     capture_stderr: true
-  }, onExit);
+  }, onWebTorrentExit);
 
   mp.add_key_binding('p', 'toggle-info', keyPressHandler);
-  showOverlay();
+}
 
-  function onExit(success: boolean, _result: unknown) {
-    const result = _result as SubprocessResult;
-    if (!success) {
-      mp.msg.error('Failed to start webtorrent');
-    } else if (result.stderr) {
-      mp.msg.error(result.stderr);
-    } else if (result.status) {
-      mp.msg.error('Webtorrent exited with error');
-    }
-    orgIdle && mp.set_property('idle', orgIdle);
-    orgForceWindow && mp.set_property('force-window', orgForceWindow);
+function getSocketName(): string {
+  let socketName = mp.get_property('input-ipc-server');
+  if (!socketName) {
+    mp.set_property('input-ipc-server', `/tmp/webtorrent-mpv-hook-socket-${Date.now()}`);
+    socketName = mp.get_property('input-ipc-server');
   }
+
+  if (!socketName) {
+    throw new Error(`Couldn't get input-ipc-server`);
+  }
+
+  return socketName;
+}
+
+function getNodeScriptPath(): string {
+  const realPath = mp.command_native({
+    name: 'subprocess',
+    args: ['node', '-p', `require('fs').realpathSync('${mp.get_script_file()}')`],
+    playback_only: false,
+    capture_stdout: true
+  }) as SubprocessResult;
+
+  try {
+    const scriptPath = realPath.stdout.split(/\r\n|\r|\n/)[0].replace(/webtorrent\.js$/, 'webtorrent.node.js');
+    if (!scriptPath) {
+      throw new Error();
+    }
+    return scriptPath;
+  } catch (e) {
+    throw new Error('Failed to get node script path');
+  }
+}
+
+function onWebTorrentExit(success: boolean, _result: unknown): void {
+  webTorrentRunning = false;
+  overlayText = '';
+  clearOverlay();
+
+  const result = _result as SubprocessResult;
+  if (!success) {
+    mp.msg.error('Failed to start WebTorrent');
+  } else if (result.stderr) {
+    mp.msg.error(result.stderr);
+  } else if (result.status) {
+    mp.msg.error('WebTorrent exited with error');
+  }
+
+  mp.unregister_script_message('osd-data');
+  mp.unregister_script_message('info');
+  mp.unregister_event(onFileLoaded);
+  mp.remove_key_binding('toggle-info');
+
+  restoreIdle();
+}
+
+function setIdle(): void {
+  orgIdle = mp.get_property('idle');
+  orgForceWindow = mp.get_property('force-window');
+  mp.set_property('idle', 'yes');
+  mp.set_property('force-window', 'yes');
+}
+
+function restoreIdle(): void {
+  orgIdle && mp.set_property('idle', orgIdle);
+  orgForceWindow && mp.set_property('force-window', orgForceWindow);
+  orgIdle = undefined;
+  orgForceWindow = undefined;
 }
 
 mp.add_hook('on_load_fail', 50, onLoadHook);
