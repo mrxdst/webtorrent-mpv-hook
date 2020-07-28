@@ -4,9 +4,6 @@ interface SubprocessResult {
   status: number;
 }
 
-const assStart = mp.get_property_osd('osd-ass-cc/0');
-const assStop = mp.get_property_osd('osd-ass-cc/1');
-
 let orgIdle: string | undefined;
 let orgForceWindow: string | undefined;
 
@@ -57,7 +54,8 @@ function printOverlay() {
     return;
   }
   if (active || initialyActive) {
-    mp.osd_message(assStart + overlayText + assStop, 2);
+    const expanded = mp.command_native(['expand-text', overlayText]) as string;
+    mp.osd_message(expanded, 2);
   }
 }
 
@@ -142,7 +140,7 @@ function runHook(url: string) {
 function getSocketName(): string {
   let socketName = mp.get_property('input-ipc-server');
   if (!socketName) {
-    mp.set_property('input-ipc-server', `/tmp/webtorrent-mpv-hook-socket-${Date.now()}`);
+    mp.set_property('input-ipc-server', `/tmp/webtorrent-mpv-hook-socket-${mp.utils.getpid()}-${Date.now()}`);
     socketName = mp.get_property('input-ipc-server');
   }
 
