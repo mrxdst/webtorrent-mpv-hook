@@ -134,16 +134,13 @@ function startPlayback(): void {
   
   const sortedFiles = [...torrent.files].sort((a, b) => a.path.localeCompare(b.path, undefined, {numeric: true}));
 
-  for (const [i, file] of sortedFiles.entries()) {
+  const playlist = sortedFiles.map(file => {
     const index = torrent.files.indexOf(file);
     const item = `http://localhost:${port}/${index}/${encodeURIComponent(file.name)}`;
+    return item;
+  });
 
-    if (i === 0) {
-      void(jsonIpc.command('loadfile', item));
-    } else {
-      void(jsonIpc.command('loadfile', item, 'append'));
-    }
-  }
+  void(jsonIpc.command('script-message-to', 'webtorrent', 'playlist', JSON.stringify(playlist)));
 }
 
 function sendOverlay(): void {

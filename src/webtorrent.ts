@@ -4,13 +4,11 @@ interface SubprocessResult {
   status: number;
 }
 
-let orgIdle: string | undefined;
-let orgForceWindow: string | undefined;
-
 let webTorrentRunning = false;
 let active = false;
 let initialyActive = false;
 let overlayText = '';
+let playlist: string[] = [];
 
 // Sync with options in webtorrent.node.ts
 const options = {
@@ -65,9 +63,25 @@ function clearOverlay() {
   mp.osd_message('', 0);
 }
 
+function openPlaylist() {
+  for (let i = 0; i < playlist.length; i++) {
+    const item = playlist[i];
+    if (i === 0) {
+      mp.commandv('loadfile', item);
+    } else {
+      mp.commandv('loadfile', item, 'append');
+    }
+  }
+}
+
 function onData(_data: unknown) {
   overlayText = _data as string;
   printOverlay();
+}
+
+function onPlaylist(_playlist: unknown) {
+  playlist = JSON.parse(_playlist as string) as string[];
+  openPlaylist();
 }
 
 function onInfo(..._info: unknown[]) {
@@ -79,8 +93,11 @@ function onFileLoaded() {
   if (!active) {
     clearOverlay();
   }
+}
 
-  restoreIdle();
+function onIdle() {
+  mp.set_property('pause', 'yes');
+  setTimeout(openPlaylist, 1000);
 }
 
 function onLoadHook() {
@@ -115,11 +132,15 @@ function runHook(url: string) {
   webTorrentRunning = true;
   initialyActive = true;
 
-  setIdle();
+  mp.set_property('idle', 'yes');
+  mp.set_property('force-window', 'yes');
+  mp.set_property('keep-open', 'yes');
 
   mp.register_script_message('osd-data', onData);
+  mp.register_script_message('playlist', onPlaylist);
   mp.register_script_message('info', onInfo);
   mp.register_event('file-loaded', onFileLoaded);
+  mp.register_event('idle', onIdle);
 
   const args = {
     torrentId: url,
@@ -185,25 +206,11 @@ function onWebTorrentExit(success: boolean, _result: unknown): void {
   }
 
   mp.unregister_script_message('osd-data');
+  mp.unregister_script_message('playlist');
   mp.unregister_script_message('info');
   mp.unregister_event(onFileLoaded);
+  mp.unregister_event(onIdle);
   mp.remove_key_binding('toggle-info');
-
-  restoreIdle();
-}
-
-function setIdle(): void {
-  orgIdle = mp.get_property('idle');
-  orgForceWindow = mp.get_property('force-window');
-  mp.set_property('idle', 'yes');
-  mp.set_property('force-window', 'yes');
-}
-
-function restoreIdle(): void {
-  orgIdle && mp.set_property('idle', orgIdle);
-  orgForceWindow && mp.set_property('force-window', orgForceWindow);
-  orgIdle = undefined;
-  orgForceWindow = undefined;
 }
 
 mp.add_hook('on_load_fail', 50, onLoadHook);
