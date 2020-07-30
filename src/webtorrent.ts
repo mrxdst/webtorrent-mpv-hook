@@ -96,8 +96,10 @@ function onFileLoaded() {
 }
 
 function onIdle() {
-  mp.set_property('pause', 'yes');
-  setTimeout(openPlaylist, 1000);
+  if (playlist.length) {
+    mp.set_property('pause', 'yes');
+    setTimeout(openPlaylist, 1000);
+  }
 }
 
 function onLoadHook() {
