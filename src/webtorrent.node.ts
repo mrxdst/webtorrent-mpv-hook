@@ -108,7 +108,9 @@ function connectMpv(): void {
   jsonIpc = new MpvJsonIpc(socket);
 
   socket.on('connect', () => {
+    updateCurrentFile();
     sendOverlay();
+    setInterval(updateCurrentFile, 500);
     setInterval(sendOverlay, 500);
     if (torrent.ready) {
       startPlayback();
@@ -116,20 +118,10 @@ function connectMpv(): void {
       torrent.once('ready', startPlayback);
     }
   });
+}
 
-  jsonIpc.on('file-loaded', () => {
-    void(getPath());
-    async function getPath() {
-      const res = await jsonIpc.command('get_property', 'path');
-      currentFile = res.data as string | undefined;
-      sendOverlay();
-    }
-  });
-
-  jsonIpc.on('end-file', () => {
-    currentFile = undefined;
-    sendOverlay();
-  });
+function updateCurrentFile(): void {
+  void(jsonIpc.command('get_property', 'path').then(res => currentFile = res.data as string | undefined));
 }
 
 function startPlayback(): void {
