@@ -45,6 +45,10 @@ type Options = {
 
 const options = JSON.parse(process.argv[2]) as Options;
 
+if (process.platform === 'win32') {
+  options.socketName = "\\\\.\\pipe" + options.socketName.replace(/\//g, '\\');
+}
+
 const textStyle = [
   `{\\r}{\\an7}`,
   `{\\fs${Math.floor(options.font_size)}}`,

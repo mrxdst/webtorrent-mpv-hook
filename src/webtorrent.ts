@@ -177,7 +177,7 @@ function getSocketName(): string {
 function getNodeScriptPath(): string {
   const realPath = mp.command_native({
     name: 'subprocess',
-    args: ['node', '-p', `require('fs').realpathSync('${mp.get_script_file()}')`],
+    args: ['node', '-p', `require('fs').realpathSync('${mp.get_script_file().replace(/\\/g, '\\\\')}')`],
     playback_only: false,
     capture_stdout: true
   }) as SubprocessResult;
