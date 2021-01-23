@@ -2,7 +2,7 @@
 
 # webtorrent-mpv-hook
 [![npm](https://img.shields.io/npm/v/webtorrent-mpv-hook)](https://www.npmjs.com/package/webtorrent-mpv-hook)
-[![mpv](https://img.shields.io/badge/mpv-v0.32.0-blue)](https://mpv.io/)
+[![mpv](https://img.shields.io/badge/mpv-v0.33.0-blue)](https://mpv.io/)
 
 Adds a hook that allows mpv to stream torrents using [webtorrent](https://github.com/webtorrent/webtorrent).  
 
@@ -42,11 +42,13 @@ p script-binding webtorrent/toggle-info
 ```properties
 # Path to save downloaded files in.
 path=./
-# Skip verification of existing files.
-skipVerify=false
 # Maximum number of connections.
 maxConns=100
 # Port to use for webtorrent web-server.
 # If it's already in use a random port will be chosen instead.
 port=8888
+# Enable μTP support.
+utp=yes
+# Enable DHT.
+dht=yes
 ```

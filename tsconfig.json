@@ -4,6 +4,7 @@
     "module": "commonjs",
     "outDir": "./build/",
     "strict": true,
+    "noUncheckedIndexedAccess": true,
     "allowJs": true,
     "downlevelIteration": true
   },

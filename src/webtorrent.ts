@@ -13,9 +13,10 @@ let playlist: string[] = [];
 // Sync with options in webtorrent.node.ts
 const options = {
   path: './',
-  skipVerify: false,
   maxConns: 100,
   port: 8888,
+  utp: true,
+  dht: true,
 
   // Text style. from stats.lua
   font: 'sans',
@@ -53,7 +54,7 @@ function printOverlay() {
   }
   if (active || initialyActive) {
     const expanded = mp.command_native(['expand-text', overlayText]) as string;
-    mp.osd_message(expanded, 2);
+    mp.osd_message(expanded, 10);
   }
 }
 
@@ -66,6 +67,9 @@ function clearOverlay() {
 function openPlaylist() {
   for (let i = 0; i < playlist.length; i++) {
     const item = playlist[i];
+    if (!item) {
+      continue;
+    }
     if (i === 0) {
       mp.commandv('loadfile', item);
     } else {
@@ -95,8 +99,8 @@ function onFileLoaded() {
   }
 }
 
-function onIdle() {
-  if (playlist.length) {
+function onIdleActiveChange(name: string, idleActive?: boolean) {
+  if (idleActive && playlist.length) {
     mp.set_property('pause', 'yes');
     setTimeout(openPlaylist, 1000);
   }
@@ -142,7 +146,7 @@ function runHook(url: string) {
   mp.register_script_message('playlist', onPlaylist);
   mp.register_script_message('info', onInfo);
   mp.register_event('file-loaded', onFileLoaded);
-  mp.register_event('idle', onIdle);
+  mp.observe_property('idle-active', 'bool', onIdleActiveChange);
 
   const args = {
     torrentId: url,
@@ -183,7 +187,7 @@ function getNodeScriptPath(): string {
   }) as SubprocessResult;
 
   try {
-    const scriptPath = realPath.stdout.split(/\r\n|\r|\n/)[0].replace(/webtorrent\.js$/, 'webtorrent.node.js');
+    const scriptPath = realPath.stdout.split(/\r\n|\r|\n/)?.[0]?.replace(/webtorrent\.js$/, 'webtorrent.node.js');
     if (!scriptPath) {
       throw new Error();
     }
@@ -211,7 +215,7 @@ function onWebTorrentExit(success: boolean, _result: unknown): void {
   mp.unregister_script_message('playlist');
   mp.unregister_script_message('info');
   mp.unregister_event(onFileLoaded);
-  mp.unregister_event(onIdle);
+  mp.unobserve_property(onIdleActiveChange as (...args: unknown[]) => void);
   mp.remove_key_binding('toggle-info');
 }
 

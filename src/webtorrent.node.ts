@@ -7,10 +7,6 @@ declare module 'webtorrent' {
   interface TorrentFile {
     offset: number; // Undocumented
   }
-
-  interface TorrentOptions {
-    skipVerify?: boolean; // Undocumented
-  }
 }
   
 process.title = 'webtorrent-mpv-hook';
@@ -26,9 +22,10 @@ type Options = {
   socketName: string;
 
   path: string;
-  skipVerify: boolean;
   maxConns: number;
   port: number;
+  utp: boolean;
+  dht: boolean;
 
   // Text style. from stats.lua
   font: string;
@@ -43,7 +40,7 @@ type Options = {
   alpha: string;
 }
 
-const options = JSON.parse(process.argv[2]) as Options;
+const options = JSON.parse(process.argv[2] ?? '{}') as Options;
 
 if (process.platform === 'win32') {
   options.socketName = "\\\\.\\pipe" + options.socketName.replace(/\//g, '\\');
@@ -74,13 +71,14 @@ const assStop = '${osd-ass-cc/1}';
 connectMpv();
 
 const client = new WebTorrent({
-  maxConns: options.maxConns
+  maxConns: options.maxConns,
+  utp: options.utp,
+  dht: options.dht
 });
 client.on('error', error);
 
 const torrent = client.add(options.torrentId, {
-  path: options.path,
-  skipVerify: options.skipVerify
+  path: options.path
 });
 
 torrent.on('infoHash', () => log('Info hash:', torrent.infoHash));
@@ -165,8 +163,9 @@ function sendOverlay(): void {
   
   if (currentFile) {
     const match = /http:\/\/localhost:\d+\/(\d+)/.exec(currentFile);
-    if (match) {
-      const file = torrent.files[parseInt(match[1])];
+    const index = match?.[1];
+    if (index) {
+      const file = torrent.files[parseInt(index)];
       if (file) {
 
         const startPiece = Math.floor(file.offset / torrent.pieceLength | 0);
