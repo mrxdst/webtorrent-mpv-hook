@@ -15,7 +15,7 @@ const options = {
   path: './',
   maxConns: 100,
   port: 8888,
-  utp: true,
+  utp: false,
   dht: true,
 
   // Text style. from stats.lua

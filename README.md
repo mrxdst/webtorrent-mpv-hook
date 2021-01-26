@@ -48,7 +48,7 @@ maxConns=100
 # If it's already in use a random port will be chosen instead.
 port=8888
 # Enable μTP support.
-utp=yes
+utp=no
 # Enable DHT.
 dht=yes
 ```
