@@ -14,7 +14,7 @@ console.log([
   '',
   'You need to symlink the script file to your mpv scripts folder:',
   '',
-  `  ${os.platform() === 'win32' ? `mklink "${link}" "${target}"` : `ln -s "${target}" "${link}"`}`,
+  `  ${os.platform() === 'win32' ? `mklink "${link}" "${target}"\n  or\n  New-Item -ItemType SymbolicLink -Path "${link}" -Target "${target}"` : `ln -s "${target}" "${link}"`}`,
   '',
   'You can then run "mpv <torrent-id>" to start streaming.',
   ''
