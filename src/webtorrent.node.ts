@@ -142,7 +142,7 @@ function sendOverlay(): void {
   const raw = (text: string): string => assStop + text.replace(/\$/g, '$$$$') + assStart;
 
   const bar = buildProgressBar(torrent.pieces);
-  const progress = Math.floor(torrent.progress * 1000) / 10;
+  const progress = Math.floor(Math.max(Math.min(torrent.progress, 1), 0) * 1000) / 10;
   const downloaded = formatNumber(torrent.downloaded, 'B', 2);
   const uploaded = formatNumber(torrent.uploaded, 'B', 2);
   const size = formatNumber(torrent.length, 'B', 2);
@@ -176,7 +176,7 @@ function sendOverlay(): void {
         const _downloaded = Math.min(torrent.downloaded, file.downloaded);
 
         const bar = buildProgressBar(pieces);
-        const progress = Math.floor(file.progress * 1000) / 10;
+        const progress = Math.floor(Math.max(Math.min(file.progress, 1), 0) * 1000) / 10;
         const downloaded = formatNumber(_downloaded, 'B', 2);
         const size = formatNumber(file.length, 'B', 2);
 
