@@ -42,8 +42,8 @@ type Options = {
 
 const options = JSON.parse(process.argv[2] ?? '{}') as Options;
 
-if (process.platform === 'win32') {
-  options.socketName = "\\\\.\\pipe" + options.socketName.replace(/\//g, '\\');
+if (process.platform === 'win32' && !options.socketName.startsWith("\\\\.\\pipe\\")) {
+  options.socketName = "\\\\.\\pipe\\" + options.socketName;
 }
 
 const textStyle = [
@@ -173,7 +173,7 @@ function sendOverlay(): void {
 
         const pieces = torrent.pieces.slice(startPiece, endPiece + 1);
 
-        const _downloaded = Math.min(torrent.downloaded, file.downloaded);
+        const _downloaded = Math.max(Math.min(torrent.downloaded, file.downloaded), 0);
 
         const bar = buildProgressBar(pieces);
         const progress = Math.floor(Math.max(Math.min(file.progress, 1), 0) * 1000) / 10;
