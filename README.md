@@ -6,6 +6,12 @@
 
 Adds a hook that allows mpv to stream torrents using [webtorrent](https://github.com/webtorrent/webtorrent).  
 
+
+## Prerequisites
+
+* node.js
+* git
+
 ## Install
 
 1. `npm install --global webtorrent-mpv-hook`
