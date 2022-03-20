@@ -57,4 +57,7 @@ port=8888
 utp=no
 # Enable DHT.
 dht=yes
+# Specify the node command to use.
+# Usefull if the command is called nodejs on your system.
+node_path=node
 ```

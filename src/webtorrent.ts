@@ -29,6 +29,9 @@ const options = {
   shadow_y_offset: 0.0,
   shadow_color: '000000',
   alpha: '11',
+
+  // Node
+  node_path: 'node'
 };
 
 mp.options.read_options(options, 'stats');
@@ -158,7 +161,7 @@ function runHook(url: string) {
 
   mp.command_native_async({
     name: 'subprocess',
-    args: ['node', scriptPath, JSON.stringify(args)],
+    args: [options.node_path, scriptPath, JSON.stringify(args)],
     playback_only: false,
     capture_stderr: true
   }, onWebTorrentExit);
@@ -183,7 +186,7 @@ function getSocketName(): string {
 function getNodeScriptPath(): string {
   const realPath = mp.command_native({
     name: 'subprocess',
-    args: ['node', '-p', `require('fs').realpathSync('${mp.get_script_file().replace(/\\/g, '\\\\')}')`],
+    args: [options.node_path, '-p', `require('fs').realpathSync('${mp.get_script_file().replace(/\\/g, '\\\\')}')`],
     playback_only: false,
     capture_stdout: true
   }) as SubprocessResult;
@@ -195,7 +198,7 @@ function getNodeScriptPath(): string {
     }
     return scriptPath;
   } catch (e) {
-    throw new Error('Failed to get node script path');
+    throw new Error(`Failed to get node script path. Possible causes are "${options.node_path}" not available in path or incorrect symlink.`);
   }
 }
 
