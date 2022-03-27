@@ -10,7 +10,6 @@ Adds a hook that allows mpv to stream torrents using [webtorrent](https://github
 ## Prerequisites
 
 * node.js
-* git
 
 ## Install
 
