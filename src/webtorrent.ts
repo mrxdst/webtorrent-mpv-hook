@@ -132,6 +132,7 @@ function onLoadHook() {
 
 function runHook(url: string) {
   mp.msg.info('Running WebTorrent hook');
+  mp.set_property('stream-open-filename', 'null://');
   if (webTorrentRunning) {
     throw new Error('WebTorrent already running. Only one instance is allowed.');
   }
@@ -224,4 +225,4 @@ function onWebTorrentExit(success: boolean, _result: unknown): void {
   mp.remove_key_binding('toggle-info');
 }
 
-mp.add_hook('on_load_fail', 50, onLoadHook);
+mp.add_hook('on_load', 50, onLoadHook);
