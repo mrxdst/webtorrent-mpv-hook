@@ -45,7 +45,7 @@ p script-binding webtorrent/toggle-info
 
 ### `script-opts/webtorrent.conf`
 ```properties
-# Path to save downloaded files in.
+# Path to save downloaded files in. Can be set to "memory" to store all files in RAM.
 path=./
 # Maximum number of connections.
 maxConns=100

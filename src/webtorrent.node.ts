@@ -1,4 +1,5 @@
 import WebTorrent from 'webtorrent';
+import memoryChunkStore from 'memory-chunk-store';
 import net from 'net';
 import convert from 'convert-units';
 import { MpvJsonIpc } from 'mpv-json-ipc';
@@ -97,7 +98,8 @@ const client = new WebTorrent({
 client.on('error', error);
 
 const torrent = client.add(options.torrentId, {
-  path: options.path
+  path: options.path,
+  store: options.path === 'memory' ? memoryChunkStore : undefined
 });
 
 torrent.on('infoHash', () => log('Info hash:', torrent.infoHash));
