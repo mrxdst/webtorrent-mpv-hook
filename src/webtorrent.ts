@@ -15,8 +15,11 @@ const options = {
   path: './',
   maxConns: 100,
   port: 8888,
-  utp: false,
+  utp: true,
   dht: true,
+  lsd: true,
+  downloadLimit: -1,
+  uploadLimit: -1,
 
   // Text style. from stats.lua
   font: 'sans',

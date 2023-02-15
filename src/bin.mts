@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 
 import path from 'path';
+import { fileURLToPath } from 'url';
 import os from 'os';
 import fs from 'fs';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const target = path.join(__dirname, '..', 'build', 'webtorrent.js');
 const link = path.join(getScriptFolder(), 'webtorrent.js');
@@ -24,7 +27,7 @@ function getScriptFolder() {
   let mpvHome;
 
   if (os.platform() === 'win32') {
-    mpvHome = process.env['MPV_HOME'] || '%APPDATA%/mpv';
+    mpvHome = process.env['MPV_HOME'] || path.join(process.env['APPDATA'] || '%APPDATA%', 'mpv');
   } else {
     mpvHome = process.env['MPV_HOME'];
     if (!mpvHome) {

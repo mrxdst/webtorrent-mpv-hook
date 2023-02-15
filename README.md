@@ -53,9 +53,15 @@ maxConns=100
 # If it's already in use a random port will be chosen instead.
 port=8888
 # Enable μTP support.
-utp=no
+utp=yes
 # Enable DHT.
 dht=yes
+# Enable local service discovery.
+lsd=yes
+# Download speed limit in bytes/sec.
+downloadLimit=-1
+# Upload speed limit in bytes/sec.
+uploadLimit=-1
 # Specify the node command to use.
 # Usefull if the command is called nodejs on your system.
 node_path=node

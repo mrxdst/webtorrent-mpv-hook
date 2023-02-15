@@ -4,8 +4,21 @@ import convert from 'convert-units';
 import { MpvJsonIpc } from 'mpv-json-ipc';
 
 declare module 'webtorrent' {
+  interface Server {
+    server: net.Server;
+    listen(port: number): void;
+    close(cb: () => void): void;
+  }
+  interface Instance {
+    createServer(): Server;
+  }
   interface TorrentFile {
-    offset: number; // Undocumented
+    offset: number;
+  }
+  interface Options {
+    downloadLimit?: number | undefined;
+    uploadLimit?: number | undefined;
+    lsd?: boolean | undefined;
   }
 }
   
@@ -26,6 +39,9 @@ type Options = {
   port: number;
   utp: boolean;
   dht: boolean;
+  lsd: boolean;
+  downloadLimit: number;
+  uploadLimit: number;
 
   // Text style. from stats.lua
   font: string;
@@ -73,7 +89,10 @@ connectMpv();
 const client = new WebTorrent({
   maxConns: options.maxConns,
   utp: options.utp,
-  dht: options.dht
+  dht: options.dht,
+  lsd: options.lsd,
+  downloadLimit: options.downloadLimit,
+  uploadLimit: options.uploadLimit
 });
 client.on('error', error);
 
@@ -84,14 +103,12 @@ const torrent = client.add(options.torrentId, {
 torrent.on('infoHash', () => log('Info hash:', torrent.infoHash));
 torrent.on('metadata', () => log('Metadata downloaded'));
 
-let server = torrent.createServer();
-server.on('error', serverError);
+const server = client.createServer();
+server.server.on('error', serverError);
 server.listen(options.port);
 
 function serverError(err: NodeJS.ErrnoException): void {
   if (err.code === 'EADDRINUSE' || err.code === 'EACCES') {
-    server = torrent.createServer();
-    server.on('error', error);
     server.listen(0);
     return;
   }
@@ -124,15 +141,11 @@ function updateCurrentFile(): void {
 
 function startPlayback(): void {
   log('Ready for playback');
-  const port = (server?.address() as net.AddressInfo).port;
+  const port = (server?.server?.address() as net.AddressInfo).port;
   
   const sortedFiles = [...torrent.files].sort((a, b) => a.path.localeCompare(b.path, undefined, {numeric: true}));
 
-  const playlist = sortedFiles.map(file => {
-    const index = torrent.files.indexOf(file);
-    const item = `http://localhost:${port}/${index}/${encodeURIComponent(file.name)}`;
-    return item;
-  });
+  const playlist = sortedFiles.map(file => `http://localhost:${port}/webtorrent/${torrent.infoHash}/${file.path.replace(/\\/g, '/').split('/').map(encodeURI).join('/')}`);
 
   void(jsonIpc.command('script-message-to', 'webtorrent', 'playlist', JSON.stringify(playlist)));
 }
@@ -162,10 +175,12 @@ function sendOverlay(): void {
   ];
   
   if (currentFile) {
-    const match = /http:\/\/localhost:\d+\/(\d+)/.exec(currentFile);
-    const index = match?.[1];
-    if (index) {
-      const file = torrent.files[parseInt(index)];
+    const match = /http:\/\/localhost:\d+\/webtorrent\/(.+)/.exec(currentFile);
+    const pathname = match?.[1];
+    if (pathname) {
+      const [, ..._filePath] = pathname.split('/')
+      const filePath = decodeURI(_filePath.join('/'))
+      const file = torrent.files.find(file => file.path.replace(/\\/g, '/') === filePath)
       if (file) {
 
         const startPiece = Math.floor(file.offset / torrent.pieceLength | 0);
