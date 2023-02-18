@@ -65,4 +65,6 @@ uploadLimit=-1
 # Specify the node command to use.
 # Usefull if the command is called nodejs on your system.
 node_path=node
+
+# The same text style options as in stats.conf is also available.
 ```

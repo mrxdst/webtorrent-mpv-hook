@@ -37,7 +37,6 @@ const options = {
   node_path: 'node'
 };
 
-mp.options.read_options(options, 'stats');
 mp.options.read_options(options);
 
 options.path = mp.command_native(['expand-path', options.path]) as string;
