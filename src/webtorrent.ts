@@ -1,9 +1,3 @@
-interface SubprocessResult {
-  stdout: string;
-  stderr: string;
-  status: number;
-}
-
 let webTorrentRunning = false;
 let active = false;
 let initialyActive = false;
@@ -39,7 +33,7 @@ const options = {
 
 mp.options.read_options(options);
 
-options.path = mp.command_native(['expand-path', options.path]) as string;
+options.path = mp.command_native<string>(['expand-path', options.path], "") as string;
 
 function keyPressHandler() {
   if (active || initialyActive) {
@@ -60,7 +54,7 @@ function printOverlay() {
     return;
   }
   if (active || initialyActive) {
-    const expanded = mp.command_native(['expand-text', overlayText]) as string;
+    const expanded = mp.command_native<string>(['expand-text', overlayText], "") as string;
     mp.osd_message(expanded, 10);
   }
 }
@@ -192,7 +186,7 @@ function getNodeScriptPath(): string {
     args: [options.node_path, '-p', `require('fs').realpathSync('${mp.get_script_file().replace(/\\/g, '\\\\')}')`],
     playback_only: false,
     capture_stdout: true
-  }) as SubprocessResult;
+  });
 
   try {
     const scriptPath = realPath.stdout.split(/\r\n|\r|\n/)?.[0]?.replace(/webtorrent\.js$/, 'webtorrent.node.js');
@@ -210,7 +204,7 @@ function onWebTorrentExit(success: boolean, _result: unknown): void {
   overlayText = '';
   clearOverlay();
 
-  const result = _result as SubprocessResult;
+  const result = _result as mp.CapturedProcess;
   if (!success) {
     mp.msg.error('Failed to start WebTorrent');
   } else if (result.stderr) {
