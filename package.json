@@ -21,7 +21,7 @@
     "clean": "rimraf build",
     "prebuild": "npm run lint",
     "build": "npm run clean && tsc",
-    "lint": "eslint src --ext ts"
+    "lint": "eslint"
   },
   "files": [
     "build"
@@ -29,17 +29,16 @@
   "dependencies": {
     "convert-units": "~2.3.4",
     "mpv-json-ipc": "~1.0.1",
-    "webtorrent": "2.3.2"
+    "webtorrent": "2.5.0"
   },
   "devDependencies": {
     "@types/convert-units": "~2.3.3",
     "@types/mpv-script": "~0.32.1",
-    "@types/node": "~20.12.12",
+    "@types/node": "~22.5.2",
     "@types/webtorrent": "~0.109.3",
-    "@typescript-eslint/eslint-plugin": "~7.10.0",
-    "@typescript-eslint/parser": "~7.10.0",
-    "eslint": "~8.57.0",
-    "rimraf": "~5.0.5",
-    "typescript": "~5.4.5"
+    "eslint": "~9.9.1",
+    "rimraf": "~6.0.1",
+    "typescript": "~5.5.4",
+    "typescript-eslint": "~8.4.0"
   }
 }

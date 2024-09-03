@@ -194,7 +194,7 @@ function getNodeScriptPath(): string {
       throw new Error();
     }
     return scriptPath;
-  } catch (e) {
+  } catch {
     throw new Error(`Failed to get node script path. Possible causes are "${options.node_path}" not available in path or incorrect symlink.`);
   }
 }
