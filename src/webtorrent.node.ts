@@ -9,9 +9,11 @@ declare module 'webtorrent' {
     server: net.Server;
     listen(port: number): void;
     close(cb: () => void): void;
+    destroy(cb?: () => void): void;
   }
   interface Instance {
     createServer(): Server;
+    _server: Server | undefined;
   }
   interface TorrentFile {
     offset: number;
@@ -105,12 +107,16 @@ const torrent = client.add(options.torrentId, {
 torrent.on('infoHash', () => log('Info hash:', torrent.infoHash));
 torrent.on('metadata', () => log('Metadata downloaded'));
 
-const server = client.createServer();
+let server = client.createServer();
 server.server.on('error', serverError);
 server.listen(options.port);
 
 function serverError(err: NodeJS.ErrnoException): void {
   if (err.code === 'EADDRINUSE' || err.code === 'EACCES') {
+    server.destroy();
+    client._server = undefined;
+    server = client.createServer();
+    server.server.on('error', serverError);
     server.listen(0);
     return;
   }

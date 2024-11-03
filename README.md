@@ -18,6 +18,10 @@ Adds a hook that allows mpv to stream torrents using [webtorrent](https://github
    Run `webtorrent-mpv-hook` for instructions.  
    You only need to do this once.
 
+## Update
+
+`npm update --global webtorrent-mpv-hook`
+
 ## Usage
 
 `mpv <torrent-id>`
