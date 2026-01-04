@@ -2,7 +2,7 @@
 
 # webtorrent-mpv-hook
 [![npm](https://img.shields.io/npm/v/webtorrent-mpv-hook)](https://www.npmjs.com/package/webtorrent-mpv-hook)
-[![mpv](https://img.shields.io/badge/mpv-v0.38.0-blue)](https://mpv.io/)
+[![mpv](https://img.shields.io/badge/mpv-v0.41.0-blue)](https://mpv.io/)
 
 Adds a hook that allows mpv to stream torrents using [webtorrent](https://github.com/webtorrent/webtorrent).  
 

@@ -158,6 +158,7 @@ function runHook(url: string) {
   mp.set_property('idle', 'yes');
   mp.set_property('force-window', 'yes');
   mp.set_property('keep-open', 'yes');
+  mp.command_native(['script-message-to', 'osc', 'osc-idlescreen', 'no', 'yes']);
 
   mp.register_script_message('osd-data', onData);
   mp.register_script_message('playlist', onPlaylist);

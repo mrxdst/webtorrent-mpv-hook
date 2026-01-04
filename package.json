@@ -1,6 +1,6 @@
 {
   "name": "webtorrent-mpv-hook",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "Adds a hook that allows mpv to stream torrents",
   "license": "Unlicense",
   "repository": {
