@@ -111,14 +111,29 @@ function onLoadHook() {
   const url = mp.get_property('stream-open-filename', '');
 
   try {
-    if (/^magnet:/i.test(url)) {
-      runHook(url);
+    let cleanUrl = url;
+    const magnetIndex = url.indexOf('magnet:');
+    if (magnetIndex > 0) {
+      cleanUrl = url.substring(magnetIndex);
+    }
+
+    if (/^magnet:/i.test(cleanUrl)) {
+      runHook(cleanUrl);
     } else if (/\.torrent$/i.test(url)) {
       runHook(url);
-    } else if (/^[0-9A-F]{40}$/i.test(url)) {
-      runHook(url);
-    } else if (/^[0-9A-Z]{32}$/i.test(url)) {
-      runHook(url);
+    } else {
+      const basename = url.split('/').pop() || '';
+
+      if (/^[0-9A-F]{40}$/i.test(basename)) {
+        // check if it is a file to avoid matching actual files
+        if (!mp.utils.file_info(url)) {
+          runHook(basename);
+        }
+      } else if (/^[0-9A-Z]{32}$/i.test(basename)) {
+        if (!mp.utils.file_info(url)) {
+          runHook(basename);
+        }
+      }
     }
   } catch (_e) {
     const e = _e as Error;
