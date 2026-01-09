@@ -18,6 +18,8 @@ Adds a hook that allows mpv to stream torrents using [webtorrent](https://github
    Run `webtorrent-mpv-hook` for instructions.  
    You only need to do this once.
 
+For linux installation without sudo you can try [this](https://github.com/mrxdst/webtorrent-mpv-hook/issues/44).
+
 ## Update
 
 `npm update --global webtorrent-mpv-hook`
