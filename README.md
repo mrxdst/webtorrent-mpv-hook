@@ -1,3 +1,35 @@
+
+<div align="right">
+  <details>
+    <summary >🌐 Language</summary>
+    <div>
+      <div align="center">
+        <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=en">English</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=zh-CN">简体中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=zh-TW">繁體中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=ja">日本語</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=ko">한국어</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=hi">हिन्दी</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=th">ไทย</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=fr">Français</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=de">Deutsch</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=es">Español</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=it">Italiano</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=ru">Русский</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=pt">Português</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=nl">Nederlands</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=pl">Polski</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=ar">العربية</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=fa">فارسی</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=tr">Türkçe</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=vi">Tiếng Việt</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=id">Bahasa Indonesia</a>
+        | <a href="https://openaitx.github.io/view.html?user=mrxdst&project=webtorrent-mpv-hook&lang=as">অসমীয়া</
+      </div>
+    </div>
+  </details>
+</div>
+
 ![mpv streaming a torrent](https://github.com/mrxdst/webtorrent-mpv-hook/raw/master/.github/poster.png)
 
 # webtorrent-mpv-hook
