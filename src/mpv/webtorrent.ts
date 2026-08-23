@@ -220,7 +220,7 @@ function onWebTorrentExit(success: boolean, _result: unknown): void {
   overlayText = '';
   clearOverlay();
 
-  const result = _result as mp.CapturedProcess;
+  const result = _result as mp.SubprocessResultWithStderr;
   if (!success) {
     mp.msg.error('Failed to start WebTorrent');
   } else if (result.stderr) {

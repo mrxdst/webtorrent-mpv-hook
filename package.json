@@ -1,6 +1,6 @@
 {
   "name": "webtorrent-mpv-hook",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "Adds a hook that allows mpv to stream torrents",
   "license": "Unlicense",
   "repository": {
@@ -20,7 +20,7 @@
   "scripts": {
     "clean": "rimraf build",
     "prebuild": "npm run lint",
-    "build": "npm run clean && tsc",
+    "build": "npm run clean && tsc -b",
     "lint": "eslint"
   },
   "files": [
@@ -29,16 +29,16 @@
   "dependencies": {
     "convert-units": "~2.3.4",
     "mpv-json-ipc": "~1.0.1",
-    "webtorrent": "2.5.0"
+    "webtorrent": "3.0.21"
   },
   "devDependencies": {
     "@types/convert-units": "~2.3.3",
     "@types/mpv-script": "~0.32.1",
-    "@types/node": "~22.5.2",
-    "@types/webtorrent": "~0.109.3",
-    "eslint": "~9.9.1",
-    "rimraf": "~6.0.1",
-    "typescript": "~5.5.4",
-    "typescript-eslint": "~8.4.0"
+    "@types/node": "~24.13.3",
+    "@types/webtorrent": "~0.110.1",
+    "eslint": "~10.8.1",
+    "rimraf": "~6.1.2",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "~8.67.0"
   }
 }

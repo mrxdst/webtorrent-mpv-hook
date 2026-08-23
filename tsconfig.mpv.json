@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "ignoreDeprecations": "6.0",
+        "target": "ES5",
+        "lib": ["ES5"],
+        "module": "commonjs",
+        "types": ["mpv-script"],
+
+        "outDir": "build",
+        "rootDir": "src/mpv",
+
+        "strict": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUncheckedIndexedAccess": true,
+        "exactOptionalPropertyTypes": true
+    },
+    "include": ["src/mpv"]
+}

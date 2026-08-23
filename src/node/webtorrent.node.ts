@@ -1,4 +1,4 @@
-import WebTorrent from 'webtorrent';
+import WebTorrent, { TorrentOptions } from 'webtorrent';
 import memoryChunkStore from 'memory-chunk-store';
 import net from 'net';
 import convert from 'convert-units';
@@ -99,10 +99,15 @@ const client = new WebTorrent({
 });
 client.on('error', error);
 
-const torrent = client.add(options.torrentId, {
+const torrentOptions: TorrentOptions = {
   path: options.path,
-  store: options.path === 'memory' ? memoryChunkStore : undefined
-});
+};
+
+if (options.path === "memory") {
+  torrentOptions.store = memoryChunkStore;
+}
+
+const torrent = client.add(options.torrentId, torrentOptions);
 
 torrent.on('infoHash', () => log('Info hash:', torrent.infoHash));
 torrent.on('metadata', () => log('Metadata downloaded'));
